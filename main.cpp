@@ -6,10 +6,10 @@
 #include <cstdlib>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_timer.h>
 
-
-const unsigned int WIN_W = 800;
-const unsigned int WIN_H = 600;
+unsigned int WIN_W = 800;
+unsigned int WIN_H = 600;
 
 const unsigned int TILE_SIZE = 100;
 
@@ -38,6 +38,7 @@ void bitPrint(uint32_t a) {
 
 int main()
 {
+  
     // uint32_t frame[WIN_W][WIN_H] = {};
 
     // // Set tiles with random color
@@ -45,7 +46,7 @@ int main()
     // uint32_t color = packRGB(std::rand()%255, std::rand()%255, std::rand()%255);
     // for(int y=0; y<WIN_H; y++){
     //     for(int x=0; x<WIN_W; x++){
-    //         if(x%TILE_SIZE==0 && y%TILE_SIZE==0){
+    //         if(x%TILE_SIZESDL_WINDOWEVENT_RESIZED=0 && y%TILE_SIZE==0){
     //             color = packRGB(std::rand()%255, std::rand()%255, std::rand()%255);
     //             frame[x][y] = color;
     //         } else{
@@ -65,31 +66,7 @@ int main()
 			SDL_BlitSurface(pixels, NULL, screenSurface, NULL);
     */
 
-    uint32_t frame[WIN_W*WIN_H] = {};
 
-    // for(int i=0; i<WIN_W*WIN_H; i++){
-    //     frame[i] = 0xFF0000FF;
-    // }
-
-
-    // Set tiles with random color
-    std::srand(std::time(nullptr));
-    uint32_t color = packRGB(std::rand()%255, std::rand()%255, std::rand()%255);
-    for(int y=0; y<WIN_H; y++){
-        for(int x=0; x<WIN_W; x++){
-            if(x%TILE_SIZE==0 && y%TILE_SIZE==0){
-                color = packRGB(std::rand()%255, std::rand()%255, std::rand()%255);
-                frame[x+y*WIN_W] = color;
-            } else{
-                if(y%TILE_SIZE!=0){
-                    frame[x+y*WIN_W] = frame[x+(y-1)*WIN_W];
-                }
-                if(x%TILE_SIZE!=0){
-                    frame[x+y*WIN_W] = frame[(x-1)+y*WIN_W];
-                }
-            }
-        }
-    }
 
     // SDL Setup
     SDL_Window* window = NULL;
@@ -104,15 +81,128 @@ int main()
 
     // Create window
     window = SDL_CreateWindow("rc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIN_W, WIN_H, SDL_WINDOW_SHOWN);
-
+    //SDL_SetWindowResizable(window, SDL_TRUE);
 
     if(window == NULL) {
         printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
         return -1;
     }
 
-    // Get window surface
-    screenSurface = SDL_GetWindowSurface(window);   
+
+    SDL_Event e;
+
+    uint64_t t1 = SDL_GetTicks64();
+    uint64_t t2 = 0;
+
+    do {
+        SDL_PollEvent(&e);
+        // if(e.type == SDL_WINDOWEVENT){  
+        //     if(e.window.event == SDL_WINDOWEVENT_RESIZED){
+        //         WIN_W = SDL_GetWindowSurface(window)->w;
+        //         WIN_H = SDL_GetWindowSurface(window)->h;
+
+        //         printf("WIN_H %d", WIN_H);
+        //         printf("WIN_W %d", WIN_W);
+                
+        //         continue;
+        //     }
+        // } else {
+        //     SDL_SetWindowSize(window, WIN_W, WIN_H);
+        // }
+
+ 
+        switch (e.type)
+        {
+        case SDL_KEYDOWN:
+            switch (e.key.keysym.sym)
+            {
+            case SDLK_UP:
+                WIN_H -= 10;
+                SDL_SetWindowSize(window, WIN_W, WIN_H);
+                break;
+            case SDLK_DOWN:
+                WIN_H += 10;
+                SDL_SetWindowSize(window, WIN_W, WIN_H);
+                break;
+            case SDLK_LEFT:
+                WIN_W -= 10;
+                SDL_SetWindowSize(window, WIN_W, WIN_H);
+                break;
+            case SDLK_RIGHT:
+                WIN_W += 10;
+                SDL_SetWindowSize(window, WIN_W, WIN_H);
+                break;                
+            
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+        
+        uint32_t frame[WIN_W*WIN_H];
+        t2 = SDL_GetTicks64();
+
+        
+
+        if(t1-t2 >= 1000){
+            // Get window surface
+            screenSurface = SDL_GetWindowSurface(window);  
+
+            // Set tiles with random color
+            std::srand(std::time(nullptr));
+            uint32_t color = packRGB(std::rand()%255, std::rand()%255, std::rand()%255);
+            for(int y=0; y<WIN_H; y++){
+                for(int x=0; x<WIN_W; x++){
+                    if(x%TILE_SIZE==0 && y%TILE_SIZE==0){
+                        color = packRGB(std::rand()%255, std::rand()%255, std::rand()%255);
+                        frame[x+y*WIN_W] = color;
+                    } else{
+                        if(y%TILE_SIZE!=0){
+                            frame[x+y*WIN_W] = frame[x+(y-1)*WIN_W];
+                        }
+                        if(x%TILE_SIZE!=0){
+                            frame[x+y*WIN_W] = frame[(x-1)+y*WIN_W];
+                        }
+                    }
+                }
+            }
+
+            offscreen = SDL_CreateRGBSurfaceFrom(frame, WIN_W, WIN_H, 32, 4*WIN_W, 0x00FF0000, 0x0000FF00, 0x000000FF, 0);
+            if(offscreen == NULL){
+                printf("Surface could not be created! SDL_Error: %s\n", SDL_GetError());
+                return -1;
+            }
+
+            SDL_BlitSurface(offscreen, NULL, screenSurface, NULL);
+            SDL_FreeSurface(offscreen);
+
+            std::cout << SDL_GetError();
+
+            
+
+            // Update the surface
+            SDL_UpdateWindowSurface(window);
+        } else {
+            t1 = t2;
+        }
+        
+        //SDL_Delay(1000);
+
+    
+        
+    } while(e.type != SDL_QUIT);
+
+
+    // for(int i=0; i<WIN_W*WIN_H; i++){
+    //     frame[i] = 0xFF0000FF;
+    // }
+
+
+
+    
+ 
     
     /*
     SDL_Surface* SDL_CreateRGBSurfaceFrom(void *pixels,
@@ -126,24 +216,9 @@ int main()
                                 Uint32 Amask);
     */
 
-    offscreen = SDL_CreateRGBSurfaceFrom(frame, WIN_W, WIN_H, 32, 4*WIN_W, 0x00FF0000, 0x0000FF00, 0x000000FF, 0);
-    if(offscreen == NULL){
-        printf("Surface could not be created! SDL_Error: %s\n", SDL_GetError());
-        return -1;
-    }
-
-    SDL_BlitSurface(offscreen, NULL, screenSurface, NULL);
-    SDL_FreeSurface(offscreen);
-
-    std::cout << SDL_GetError();
-
-    
-
-    // Update the surface
-    SDL_UpdateWindowSurface(window);
 
     // Hack to get window to stay up
-    SDL_Event e; bool quit = false; while (quit == false){while(SDL_PollEvent(&e)){if(e.type == SDL_QUIT) quit = true;}}
+    //SDL_Event e; bool quit = false; while (quit == false){while(SDL_PollEvent(&e)){if(e.type == SDL_QUIT) quit = true;}}
 
     // Destroy window
     SDL_DestroyWindow(window);
