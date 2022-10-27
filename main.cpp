@@ -5,6 +5,8 @@
 #include <ctime>
 #include <cstdlib>
 
+#include <stdlib.h>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
 
@@ -12,6 +14,26 @@ unsigned int WIN_W = 800;
 unsigned int WIN_H = 600;
 
 const unsigned int TILE_SIZE = 100;
+
+uint32_t GAMEMAP[100] = {
+    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
+    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
+    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
+    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
+    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
+    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
+    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
+    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
+    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
+    {0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0x00000000},{0x00000000},{0x00000000},
+};
+
+
+struct Point{
+    uint32_t x;
+    uint32_t y;
+};
+
 
 class Rect
 {
@@ -21,6 +43,27 @@ class Rect
         uint32_t width;
         uint32_t height;
         uint32_t color;
+        
+        void setX(uint32_t _x){
+            x = _x;
+        }
+
+        void setY(uint32_t _y){
+            y = _y;
+        }
+
+        void setWidth(uint32_t _width){
+            width = _width;
+        }
+
+        void setHeight(uint32_t _height){
+            height = _height;
+        }
+
+        void setColor(uint32_t _color){
+            color = _color;
+        }
+
         Rect(uint32_t _x, uint32_t _y, uint32_t _width, uint32_t _height, uint32_t _color){
             x = _x;
             y = _y;
@@ -39,6 +82,19 @@ class Rect
 
 };
 
+class Player{
+    public:
+        float angle;
+        Rect r;
+        Player(){
+            angle = 0;
+            r = Rect();
+        }
+        Player(float _angle, Rect _r){
+            angle = _angle;
+            r = _r;
+        }
+};
 
 uint32_t packRGB(uint8_t _r, uint8_t _g, uint8_t _b){
     uint32_t _rgb = 0;
@@ -51,6 +107,10 @@ uint32_t packRGB(uint8_t _r, uint8_t _g, uint8_t _b){
     return _rgb;
 }
 
+/** 
+ * @brief Print to stdout a string containing the bits of an uint32_t
+ * @param a uint32_t variable to print
+ */
 void bitPrint(uint32_t a) {
      for(int i=UINT32_WIDTH; i>0; i--) {
         if(i%4==0){
@@ -62,6 +122,12 @@ void bitPrint(uint32_t a) {
         printf("\n");
     }
 
+/**
+ * @brief Draw tiles with a random color on frame
+ *        The size of the tiles is defined by the global var TILE_SIZE in px
+ * 
+ * @param frame The frame to draw the tiles on
+ */
 void tile(uint32_t* frame){
     // Set tiles with random color
     std::srand(std::time(nullptr));
@@ -83,6 +149,7 @@ void tile(uint32_t* frame){
     }
 }
 
+
 void setFrameColor(uint32_t* frame, uint32_t _rgb){
     for(int i=0; i<WIN_W*WIN_H; i++){
         frame[i] = _rgb;
@@ -90,11 +157,124 @@ void setFrameColor(uint32_t* frame, uint32_t _rgb){
 }
 
 void drawRectToFrame(uint32_t* frame, Rect rec){
+    printf("{x: %d, y:%d, width:%d, height:%d, color:%x}\n", rec.x, rec.y, rec.width, rec.height, rec.color);
     for(int y=rec.y; y<rec.y+rec.height; y++){
         for(int x=rec.x; x<rec.x+rec.width; x++){
             frame[x + y*WIN_W] = rec.color;
         }
     }
+}
+
+
+
+// TODO MAKE IT WORK
+void applyTileMapToFrame(uint32_t* frame){
+    uint32_t color = 0xFFFFFF;
+    uint32_t tileHeight = WIN_H/100;
+    uint32_t tileWidth = WIN_W/100;
+    
+    for(int y=0; y<10; y++){
+        for(int x=0; x<10; x++){
+            if(GAMEMAP[x+y*10] != 0){
+                drawRectToFrame(frame, Rect(x*tileWidth, y*tileHeight, tileWidth, tileHeight, 0xFFFFFF));
+            }
+        }
+    }
+}
+
+void plotLineHigh(uint32_t* frame, int x0, int y0, int x1, int y1){
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    int xi = 1;
+    if(dx < 0){
+        xi = -1;
+        dx = -dx;
+    }
+    int D = (2*dx) - dy;
+    int x = x0;
+
+    for(int y=y0; y<y1; y++){
+        frame[x+y*WIN_W] = 0xFFFFFF;
+        if(D>0){
+            x += xi;
+            D += 2*(dx-dy);
+        } else {
+            D += 2*dx;
+        }
+    }
+
+}
+
+void plotLineLow(uint32_t* frame, int x0, int y0, int x1, int y1){
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    int yi = 1;
+
+    if(dy<0){
+        yi = -1;
+        dy = -dy;
+    }
+    int D = (2*dy)-dx;
+    int y = y0;
+    
+    for(int x=x0; x<x1; x++){
+        frame[x+y*WIN_W] = 0xFFFFFF;
+        if(D>0){
+            y += yi;
+            D += 2*(dy-dx);
+        } else {
+            D += 2*dy;
+        }
+    }
+}
+
+/**
+ * @brief Bresenham's_line_algorithm
+ * 
+ * @param frame 
+ * @param x0 
+ * @param y0 
+ * @param x1 
+ * @param y1 
+ */
+void plotLine(uint32_t* frame, int x0, int y0, int x1, int y1){
+    if(abs(y1-y0)<abs(x1-x0)) {
+        if(x0>x1){
+            plotLineLow(frame, x1,y1,x0,y0);
+        } else {
+            plotLineLow(frame, x0,y0,x1,y1);
+        }
+    } else {
+        if(y0>y1){
+            plotLineHigh(frame, x1,y1,x0,y0);
+        } else {
+            plotLineHigh(frame, x0,y0,x1,y1);
+        }
+    }
+}
+
+
+
+
+void drawLine(uint32_t* frame, Point p1, Point p2){
+    int dx = p2.x - p1.x;
+    int dy = p2.y - p1.y;
+
+    for(int i=p1.x; i<p2.x; i++){
+        int y = p1.y + dy * (i-p1.x) / dx;
+        frame[i + y*WIN_W] = 0xFFFFFF;
+    }
+}
+
+void castRay(uint32_t* frame, Player player){
+
+    float x = player.r.x + 100*cos(player.angle);
+    float y = player.r.y + 100*sin(player.angle);
+    
+    plotLine(frame, player.r.x, player.r.y, int(x), int(y));
+    
+    
+
 }
 
 int main()
@@ -125,8 +305,9 @@ int main()
     uint64_t t1 = SDL_GetTicks64();
     uint64_t t2 = 0;
 
-    Rect r = Rect(10, 10, 100, 100, 0x00FF00);
-
+    Player player = {0., {400,300,1,1,0x00FFFFFF}};
+    //drawLine(frame, {0,0}, {800,600});
+    
     do {
         SDL_PollEvent(&e);
  
@@ -138,22 +319,26 @@ int main()
             case SDLK_UP:
                 // WIN_H -= 10;
                 // SDL_SetWindowSize(window, WIN_W, WIN_H);
-                r.y -= 10;
+                player.r.y -= 10;
+                
                 break;
             case SDLK_DOWN:
                 // WIN_H += 10;
                 // SDL_SetWindowSize(window, WIN_W, WIN_H);
-                r.y += 10;
+                player.r.y += 10;
+                
                 break;
             case SDLK_LEFT:
                 // WIN_W -= 10;
                 // SDL_SetWindowSize(window, WIN_W, WIN_H);
-                r.x -= 10;
+                player.r.x -= 10;
+                
                 break;
             case SDLK_RIGHT:
                 // WIN_W += 10;
                 // SDL_SetWindowSize(window, WIN_W, WIN_H);
-                r.x += 10;
+                player.r.x += 10;
+                
                 break;                
             
             default:
@@ -167,16 +352,24 @@ int main()
         uint32_t frame[WIN_W*WIN_H];
         t2 = SDL_GetTicks64();
 
-        
+        // TODO FIX TIME
 
-        if(t1-t2 >= 1000){
+        if(t1-t2 >= 0){
             // Get window surface
             screenSurface = SDL_GetWindowSurface(window);  
 
             //tile((uint32_t*)frame);
             setFrameColor((uint32_t*)frame, 0);
-            drawRectToFrame((uint32_t*)frame, r);
+            // applyTileMapToFrame((uint32_t*)frame);
+            drawRectToFrame((uint32_t*)frame, player.r);
+            //castRay((uint32_t*)frame, player);
 
+
+            castRay(frame, player);
+            player.angle += M_1_PIf32/6;
+            //plotLine(frame, player.r.x, player.r.y, cos(player.angle), sin(player.angle));
+
+            
             offscreen = SDL_CreateRGBSurfaceFrom(frame, WIN_W, WIN_H, 32, 4*WIN_W, 0x00FF0000, 0x0000FF00, 0x000000FF, 0);
             if(offscreen == NULL){
                 printf("Surface could not be created! SDL_Error: %s\n", SDL_GetError());
