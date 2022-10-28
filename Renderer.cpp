@@ -55,6 +55,12 @@ void Renderer::plotLineLow(int x0, int y0, int x1, int y1){
  * @param y1 
  */
 void Renderer::plotLine(int x0, int y0, int x1, int y1){
+    if(x0<0 || x0>winW || x1<0 || x1>winW ||
+       y0<0 || y0>winH || y1<0 || y1>winH){
+
+        return;
+       }
+    
     if(abs(y1-y0)<abs(x1-x0)) {
         if(x0>x1){
             plotLineLow(x1,y1,x0,y0);
@@ -116,7 +122,6 @@ Renderer::Renderer(uint32_t _winW, uint32_t _winH){
 
 void Renderer::updateWindow(){
     screenSurface = SDL_GetWindowSurface(window);
-    
     offscreen = SDL_CreateRGBSurfaceFrom(frame, winW, winH, 32, 4*winW, 0x00FF0000, 0x0000FF00, 0x000000FF, 0);
     if(offscreen == NULL){
         printf("Surface could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -124,13 +129,13 @@ void Renderer::updateWindow(){
     }
 
     SDL_BlitSurface(offscreen, NULL, screenSurface, NULL);
-    SDL_FreeSurface(offscreen);
+    //SDL_FreeSurface(offscreen);
 
     std::cout << SDL_GetError();
     
     // Update the surface
     SDL_UpdateWindowSurface(window);
-    setFrameColor(0);
+    //setFrameColor(0);
 }
 
 void Renderer::quit(){
@@ -139,4 +144,23 @@ void Renderer::quit(){
 
     // Quit SDL subsystems
     SDL_Quit();
+}
+
+void Renderer::saveFrameToFile(){
+    std::ofstream File("frame.ppm", std::ios::out | std::ios::binary);
+
+    File << "P6" << (uint8_t)0x0A << winW << (uint8_t)0x20 << winH << (uint8_t)0x0A << "255" << (uint8_t)0x0A;
+    
+    for(int y=0; y<winH; y++){
+        for(int x=0; x<winW; x++){
+            // R
+            File << (uint8_t)(frame[x+y*winW]>>16);
+            // G
+            File << (uint8_t)((frame[x+y*winW]>>8)&0x000000FF);
+            // B
+            File << (uint8_t)(frame[x+y*winW]&0x000000FF);
+        }
+    }
+    
+    File.close();
 }

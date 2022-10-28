@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 #include <iostream>
+#include <fstream>
 #include <SDL2/SDL.h>
 #include "Player.h"
 
@@ -21,6 +22,8 @@ class Renderer{
         void plotLine(int x0, int y0, int x1, int y1);
         void setFrameColor(uint32_t _rgb);
         void drawRectToFrame(Rect rec);
+
+        void saveFrameToFile();
 
         void updateWindow();
         void quit();

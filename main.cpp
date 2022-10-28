@@ -102,111 +102,6 @@ void tile(uint32_t* frame){
 }
 
 
-// void setFrameColor(uint32_t* frame, uint32_t _rgb){
-//     for(int i=0; i<WIN_W*WIN_H; i++){
-//         frame[i] = _rgb;
-//     }
-// }
-
-// void drawRectToFrame(uint32_t* frame, Rect rec){
-//     printf("{x: %d, y:%d, width:%d, height:%d, color:%x}\n", rec.x, rec.y, rec.width, rec.height, rec.color);
-//     for(int y=rec.y; y<rec.y+rec.height; y++){
-//         for(int x=rec.x; x<rec.x+rec.width; x++){
-//             frame[x + y*WIN_W] = rec.color;
-//         }
-//     }
-// }
-
-
-
-// // TODO MAKE IT WORK
-// void applyTileMapToFrame(uint32_t* frame){
-//     uint32_t color = 0xFFFFFF;
-//     uint32_t tileHeight = WIN_H/100;
-//     uint32_t tileWidth = WIN_W/100;
-    
-//     for(int y=0; y<10; y++){
-//         for(int x=0; x<10; x++){
-//             if(GAMEMAP[x+y*10] != 0){
-//                 drawRectToFrame(frame, Rect(x*tileWidth, y*tileHeight, tileWidth, tileHeight, 0xFFFFFF));
-//             }
-//         }
-//     }
-// }
-
-// void plotLineHigh(uint32_t* frame, int x0, int y0, int x1, int y1){
-//     int dx = x1 - x0;
-//     int dy = y1 - y0;
-//     int xi = 1;
-//     if(dx < 0){
-//         xi = -1;
-//         dx = -dx;
-//     }
-//     int D = (2*dx) - dy;
-//     int x = x0;
-
-//     for(int y=y0; y<y1; y++){
-//         frame[x+y*WIN_W] = 0xFFFFFF;
-//         if(D>0){
-//             x += xi;
-//             D += 2*(dx-dy);
-//         } else {
-//             D += 2*dx;
-//         }
-//     }
-// }
-
-// void plotLineLow(uint32_t* frame, int x0, int y0, int x1, int y1){
-//     int dx = x1 - x0;
-//     int dy = y1 - y0;
-//     int yi = 1;
-
-//     if(dy<0){
-//         yi = -1;
-//         dy = -dy;
-//     }
-//     int D = (2*dy)-dx;
-//     int y = y0;
-    
-//     for(int x=x0; x<x1; x++){
-//         frame[x+y*WIN_W] = 0xFFFFFF;
-//         if(D>0){
-//             y += yi;
-//             D += 2*(dy-dx);
-//         } else {
-//             D += 2*dy;
-//         }
-//     }
-// }
-
-// /**
-//  * @brief Bresenham's_line_algorithm
-//  * 
-//  * @param frame 
-//  * @param x0 
-//  * @param y0 
-//  * @param x1 
-//  * @param y1 
-//  */
-// void plotLine(uint32_t* frame, int x0, int y0, int x1, int y1){
-//     if(abs(y1-y0)<abs(x1-x0)) {
-//         if(x0>x1){
-//             plotLineLow(frame, x1,y1,x0,y0);
-//         } else {
-//             plotLineLow(frame, x0,y0,x1,y1);
-//         }
-//     } else {
-//         if(y0>y1){
-//             plotLineHigh(frame, x1,y1,x0,y0);
-//         } else {
-//             plotLineHigh(frame, x0,y0,x1,y1);
-//         }
-//     }
-// }
-
-
-
-
 
 void castRay(Renderer r, Player player){
 
@@ -215,8 +110,8 @@ void castRay(Renderer r, Player player){
     
     r.plotLine(player.r.x, player.r.y, int(x), int(y));
 
-    r.plotLine(int(x), 0, int(x), int(y));
-    r.plotLine(0, int(y), int(x), int(y));
+    // r.plotLine(int(x), 0, int(x), int(y));
+    // r.plotLine(0, int(y), int(x), int(y));
 
     
     
@@ -225,40 +120,18 @@ void castRay(Renderer r, Player player){
 
 int main()
 {
-    // SDL Setup
-    // SDL_Window* window = NULL;
-    // SDL_Surface* screenSurface = NULL;
-    // SDL_Surface* offscreen = NULL;
-    
-
-
-    // if(SDL_Init(SDL_INIT_VIDEO) < 0)
-	// {
-	// 	printf("SDL could not initialize ! SDL_Error: %s", SDL_GetError());
-    //     return -1;
-	// }
-
-    // // Create window
-    // window = SDL_CreateWindow("rc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIN_W, WIN_H, SDL_WINDOW_SHOWN);
-    // //SDL_SetWindowResizable(window, SDL_TRUE);
-
-    // if(window == NULL) {
-    //     printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-    //     return -1;
-    // }
-
-
     SDL_Event e;
 
-    uint64_t t1 = SDL_GetTicks64();
-    uint64_t t2 = 0;
+   
 
     Player player = {0., {400,300,1,1,0x00FFFFFF}};
-    //drawLine(frame, {0,0}, {800,600});
     
     Renderer rend(WIN_W, WIN_H);
 
     do {
+        uint64_t t1 = SDL_GetTicks64();
+        uint64_t t2 = 0;
+
         SDL_PollEvent(&e);
  
         switch (e.type)
@@ -267,26 +140,18 @@ int main()
             switch (e.key.keysym.sym)
             {
             case SDLK_UP:
-                // WIN_H -= 10;
-                // SDL_SetWindowSize(window, WIN_W, WIN_H);
                 player.r.y -= 10;
                 
                 break;
             case SDLK_DOWN:
-                // WIN_H += 10;
-                // SDL_SetWindowSize(window, WIN_W, WIN_H);
                 player.r.y += 10;
                 
                 break;
             case SDLK_LEFT:
-                // WIN_W -= 10;
-                // SDL_SetWindowSize(window, WIN_W, WIN_H);
                 player.r.x -= 10;
                 
                 break;
             case SDLK_RIGHT:
-                // WIN_W += 10;
-                // SDL_SetWindowSize(window, WIN_W, WIN_H);
                 player.r.x += 10;
                 
                 break;                
@@ -298,81 +163,32 @@ int main()
         default:
             break;
         }
-        
+
         uint32_t frame[WIN_W*WIN_H];
         rend.frame = frame;
+        rend.setFrameColor(0);
+
+
+        castRay(rend, player);
+
+        // player.angle += M_1_PIf32/24;
+
+        rend.updateWindow();
+
         t2 = SDL_GetTicks64();
-
-        // TODO FIX TIME
-
-        if(t1-t2 >= 0){
-            // // Get window surface
-            // screenSurface = SDL_GetWindowSurface(window);
-
-            // //tile((uint32_t*)frame);
-            // setFrameColor((uint32_t*)frame, 0);
-            // // applyTileMapToFrame((uint32_t*)frame);
-            // drawRectToFrame((uint32_t*)frame, player.r);
-            // //castRay((uint32_t*)frame, player);
-
-
-            castRay(rend, player);
-            
-            player.angle += M_1_PIf32/24;
-
-            //plotLine(frame, player.r.x, player.r.y, cos(player.angle), sin(player.angle));
-
-            
-            // offscreen = SDL_CreateRGBSurfaceFrom(frame, WIN_W, WIN_H, 32, 4*WIN_W, 0x00FF0000, 0x0000FF00, 0x000000FF, 0);
-            // if(offscreen == NULL){
-            //     printf("Surface could not be created! SDL_Error: %s\n", SDL_GetError());
-            //     return -1;
-            // }
-
-            // SDL_BlitSurface(offscreen, NULL, screenSurface, NULL);
-            // SDL_FreeSurface(offscreen);
-
-            // std::cout << SDL_GetError();
-
-            
-
-            // // Update the surface
-            // SDL_UpdateWindowSurface(window);
-            rend.updateWindow();
-        } else {
-            t1 = t2;
-        }
-
-
     
+        printf("deltaT[s]: %f | ", (t2-t1)/1000.);
+        printf("fps: %4.1f\n", 1/((t2-t1)/1000.));
+
+        // rend.saveFrameToFile();
+        // break;
         
     } while(e.type != SDL_QUIT);
-
-
     rend.quit();
-    // // Destroy window
-    // SDL_DestroyWindow(window);
 
-    // // Quit SDL subsystems
-    // SDL_Quit();
-
-
-    // std::ofstream File("frame.ppm", std::ios::out | std::ios::binary);
-
-    // File << "P6" << (uint8_t)0x0A << WIN_W << (uint8_t)0x20 << WIN_H << (uint8_t)0x0A << "255" << (uint8_t)0x0A;
     
-    // for(int y=0; y<WIN_H; y++){
-    //     for(int x=0; x<WIN_W; x++){
-    //         // R
-    //         File << (uint8_t)(frame[x][y]>>16);
-    //         // G
-    //         File << (uint8_t)((frame[x][y]>>8)&0x000000FF);
-    //         // B
-    //         File << (uint8_t)(frame[x][y]&0x000000FF);
-    //     }
-    // }
-    
-    // File.close();
+
+
 
     return 0;
 }

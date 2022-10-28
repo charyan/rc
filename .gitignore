@@ -2,3 +2,5 @@
 *.ppm
 *.vscode/*
 main
+Rect
+Renderer
