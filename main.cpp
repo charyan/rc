@@ -127,8 +127,10 @@ int main()
                 break;
             case SDLK_RIGHT:
                 player.r.x += 10;
-                
-                break;                
+                break;
+            case SDLK_SPACE:
+                player.angle += M_1_PIf32/6;
+                break;     
             
             default:
                 break;
