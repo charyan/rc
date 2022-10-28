@@ -1,10 +1,3 @@
-/**
- * Todo:
- *  - move SDL code from main.ccp to Renderer
- *  - create utils.cpp/.h
- *  - put castRay in 
- */
-
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -20,33 +13,25 @@
 #include "headers/Rect.h"
 #include "headers/Player.h"
 #include "headers/Renderer.h"
+#include "headers/RayCaster.h"
 
 unsigned int WIN_W = 800;
 unsigned int WIN_H = 600;
 
 const unsigned int TILE_SIZE = 100;
 
-uint32_t GAMEMAP[100] = {
-    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
-    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
-    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
-    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
-    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
-    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
-    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
-    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
-    {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
-    {0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0x00000000},{0x00000000},{0x00000000}
+unsigned int GAMEMAP[36] = {
+    1,1,1,0,0,0,
+    1,0,0,0,0,0,
+    1,0,0,0,0,0,
+    1,0,0,0,0,1,
+    1,1,1,1,1,1
 };
-
 
 struct Point{
     uint32_t x;
     uint32_t y;
 };
-
-
-
 
 uint32_t packRGB(uint8_t _r, uint8_t _g, uint8_t _b){
     uint32_t _rgb = 0;
@@ -103,20 +88,7 @@ void tile(uint32_t* frame){
 
 
 
-void castRay(Renderer r, Player player){
 
-    float x = player.r.x + 150*cos(player.angle);
-    float y = player.r.y - 150*sin(player.angle);
-    
-    r.plotLine(player.r.x, player.r.y, int(x), int(y));
-
-    // r.plotLine(int(x), 0, int(x), int(y));
-    // r.plotLine(0, int(y), int(x), int(y));
-
-    
-    
-
-}
 
 int main()
 {
@@ -124,9 +96,11 @@ int main()
 
    
 
-    Player player = {0., {400,300,1,1,0x00FFFFFF}};
+    Player player = {0., {400,300,10,10,0x00FF00}};
     
     Renderer rend(WIN_W, WIN_H);
+    RayCaster rc(rend);
+    
 
     do {
         uint64_t t1 = SDL_GetTicks64();
@@ -169,7 +143,10 @@ int main()
         rend.setFrameColor(0);
 
 
-        castRay(rend, player);
+        // castRay(rend, player);
+        rc.applyGamemap(GAMEMAP, 6,6);
+        rc.castRay(player);
+        rend.drawRectToFrame(player.r);
 
         // player.angle += M_1_PIf32/24;
 

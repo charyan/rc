@@ -17,18 +17,19 @@ class Renderer{
         SDL_Surface* screenSurface;
         SDL_Surface* offscreen;
 
-        void plotLineHigh(int x0, int y0, int x1, int y1);
-        void plotLineLow(int x0, int y0, int x1, int y1);
         void plotLine(int x0, int y0, int x1, int y1);
         void setFrameColor(uint32_t _rgb);
         void drawRectToFrame(Rect rec);
-
         void saveFrameToFile();
-
         void updateWindow();
         void quit();
 
         Renderer(uint32_t _winW, uint32_t _winH);
+
+    private:
+        void plotLineHigh(int x0, int y0, int x1, int y1);
+        void plotLineLow(int x0, int y0, int x1, int y1);
+
 
 };
 

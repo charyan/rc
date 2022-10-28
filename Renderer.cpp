@@ -84,7 +84,7 @@ void Renderer::setFrameColor(uint32_t _rgb){
 }
 
 void Renderer::drawRectToFrame(Rect rec){
-    printf("{x: %d, y:%d, width:%d, height:%d, color:%x}\n", rec.x, rec.y, rec.width, rec.height, rec.color);
+    //printf("{x: %d, y:%d, width:%d, height:%d, color:%x}\n", rec.x, rec.y, rec.width, rec.height, rec.color);
     for(int y=rec.y; y<rec.y+rec.height; y++){
         for(int x=rec.x; x<rec.x+rec.width; x++){
             frame[x + y*winW] = rec.color;
@@ -164,3 +164,4 @@ void Renderer::saveFrameToFile(){
     
     File.close();
 }
+
