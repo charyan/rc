@@ -1,3 +1,10 @@
+/**
+ * Todo:
+ *  - move SDL code from main.ccp to Renderer
+ *  - create utils.cpp/.h
+ *  - put castRay in 
+ */
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -9,6 +16,10 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
+
+#include "headers/Rect.h"
+#include "headers/Player.h"
+#include "headers/Renderer.h"
 
 unsigned int WIN_W = 800;
 unsigned int WIN_H = 600;
@@ -25,7 +36,7 @@ uint32_t GAMEMAP[100] = {
     {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
     {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
     {0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},{0x00000000},
-    {0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0x00000000},{0x00000000},{0x00000000},
+    {0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0xFF000000},{0x00000000},{0x00000000},{0x00000000}
 };
 
 
@@ -35,66 +46,7 @@ struct Point{
 };
 
 
-class Rect
-{
-    public:
-        uint32_t x;
-        uint32_t y;
-        uint32_t width;
-        uint32_t height;
-        uint32_t color;
-        
-        void setX(uint32_t _x){
-            x = _x;
-        }
 
-        void setY(uint32_t _y){
-            y = _y;
-        }
-
-        void setWidth(uint32_t _width){
-            width = _width;
-        }
-
-        void setHeight(uint32_t _height){
-            height = _height;
-        }
-
-        void setColor(uint32_t _color){
-            color = _color;
-        }
-
-        Rect(uint32_t _x, uint32_t _y, uint32_t _width, uint32_t _height, uint32_t _color){
-            x = _x;
-            y = _y;
-            width = _width;
-            height = _height;
-            color = _color;
-        }
-        Rect(){
-            x = 0;
-            y = 0;
-            width = 0;
-            height = 0;
-            color = 0xFFFFFF;
-        }
-
-
-};
-
-class Player{
-    public:
-        float angle;
-        Rect r;
-        Player(){
-            angle = 0;
-            r = Rect();
-        }
-        Player(float _angle, Rect _r){
-            angle = _angle;
-            r = _r;
-        }
-};
 
 uint32_t packRGB(uint8_t _r, uint8_t _g, uint8_t _b){
     uint32_t _rgb = 0;
@@ -150,128 +102,122 @@ void tile(uint32_t* frame){
 }
 
 
-void setFrameColor(uint32_t* frame, uint32_t _rgb){
-    for(int i=0; i<WIN_W*WIN_H; i++){
-        frame[i] = _rgb;
-    }
-}
+// void setFrameColor(uint32_t* frame, uint32_t _rgb){
+//     for(int i=0; i<WIN_W*WIN_H; i++){
+//         frame[i] = _rgb;
+//     }
+// }
 
-void drawRectToFrame(uint32_t* frame, Rect rec){
-    printf("{x: %d, y:%d, width:%d, height:%d, color:%x}\n", rec.x, rec.y, rec.width, rec.height, rec.color);
-    for(int y=rec.y; y<rec.y+rec.height; y++){
-        for(int x=rec.x; x<rec.x+rec.width; x++){
-            frame[x + y*WIN_W] = rec.color;
-        }
-    }
-}
+// void drawRectToFrame(uint32_t* frame, Rect rec){
+//     printf("{x: %d, y:%d, width:%d, height:%d, color:%x}\n", rec.x, rec.y, rec.width, rec.height, rec.color);
+//     for(int y=rec.y; y<rec.y+rec.height; y++){
+//         for(int x=rec.x; x<rec.x+rec.width; x++){
+//             frame[x + y*WIN_W] = rec.color;
+//         }
+//     }
+// }
 
 
 
-// TODO MAKE IT WORK
-void applyTileMapToFrame(uint32_t* frame){
-    uint32_t color = 0xFFFFFF;
-    uint32_t tileHeight = WIN_H/100;
-    uint32_t tileWidth = WIN_W/100;
+// // TODO MAKE IT WORK
+// void applyTileMapToFrame(uint32_t* frame){
+//     uint32_t color = 0xFFFFFF;
+//     uint32_t tileHeight = WIN_H/100;
+//     uint32_t tileWidth = WIN_W/100;
     
-    for(int y=0; y<10; y++){
-        for(int x=0; x<10; x++){
-            if(GAMEMAP[x+y*10] != 0){
-                drawRectToFrame(frame, Rect(x*tileWidth, y*tileHeight, tileWidth, tileHeight, 0xFFFFFF));
-            }
-        }
-    }
-}
+//     for(int y=0; y<10; y++){
+//         for(int x=0; x<10; x++){
+//             if(GAMEMAP[x+y*10] != 0){
+//                 drawRectToFrame(frame, Rect(x*tileWidth, y*tileHeight, tileWidth, tileHeight, 0xFFFFFF));
+//             }
+//         }
+//     }
+// }
 
-void plotLineHigh(uint32_t* frame, int x0, int y0, int x1, int y1){
-    int dx = x1 - x0;
-    int dy = y1 - y0;
-    int xi = 1;
-    if(dx < 0){
-        xi = -1;
-        dx = -dx;
-    }
-    int D = (2*dx) - dy;
-    int x = x0;
+// void plotLineHigh(uint32_t* frame, int x0, int y0, int x1, int y1){
+//     int dx = x1 - x0;
+//     int dy = y1 - y0;
+//     int xi = 1;
+//     if(dx < 0){
+//         xi = -1;
+//         dx = -dx;
+//     }
+//     int D = (2*dx) - dy;
+//     int x = x0;
 
-    for(int y=y0; y<y1; y++){
-        frame[x+y*WIN_W] = 0xFFFFFF;
-        if(D>0){
-            x += xi;
-            D += 2*(dx-dy);
-        } else {
-            D += 2*dx;
-        }
-    }
+//     for(int y=y0; y<y1; y++){
+//         frame[x+y*WIN_W] = 0xFFFFFF;
+//         if(D>0){
+//             x += xi;
+//             D += 2*(dx-dy);
+//         } else {
+//             D += 2*dx;
+//         }
+//     }
+// }
 
-}
+// void plotLineLow(uint32_t* frame, int x0, int y0, int x1, int y1){
+//     int dx = x1 - x0;
+//     int dy = y1 - y0;
+//     int yi = 1;
 
-void plotLineLow(uint32_t* frame, int x0, int y0, int x1, int y1){
-    int dx = x1 - x0;
-    int dy = y1 - y0;
-    int yi = 1;
-
-    if(dy<0){
-        yi = -1;
-        dy = -dy;
-    }
-    int D = (2*dy)-dx;
-    int y = y0;
+//     if(dy<0){
+//         yi = -1;
+//         dy = -dy;
+//     }
+//     int D = (2*dy)-dx;
+//     int y = y0;
     
-    for(int x=x0; x<x1; x++){
-        frame[x+y*WIN_W] = 0xFFFFFF;
-        if(D>0){
-            y += yi;
-            D += 2*(dy-dx);
-        } else {
-            D += 2*dy;
-        }
-    }
-}
+//     for(int x=x0; x<x1; x++){
+//         frame[x+y*WIN_W] = 0xFFFFFF;
+//         if(D>0){
+//             y += yi;
+//             D += 2*(dy-dx);
+//         } else {
+//             D += 2*dy;
+//         }
+//     }
+// }
 
-/**
- * @brief Bresenham's_line_algorithm
- * 
- * @param frame 
- * @param x0 
- * @param y0 
- * @param x1 
- * @param y1 
- */
-void plotLine(uint32_t* frame, int x0, int y0, int x1, int y1){
-    if(abs(y1-y0)<abs(x1-x0)) {
-        if(x0>x1){
-            plotLineLow(frame, x1,y1,x0,y0);
-        } else {
-            plotLineLow(frame, x0,y0,x1,y1);
-        }
-    } else {
-        if(y0>y1){
-            plotLineHigh(frame, x1,y1,x0,y0);
-        } else {
-            plotLineHigh(frame, x0,y0,x1,y1);
-        }
-    }
-}
-
-
+// /**
+//  * @brief Bresenham's_line_algorithm
+//  * 
+//  * @param frame 
+//  * @param x0 
+//  * @param y0 
+//  * @param x1 
+//  * @param y1 
+//  */
+// void plotLine(uint32_t* frame, int x0, int y0, int x1, int y1){
+//     if(abs(y1-y0)<abs(x1-x0)) {
+//         if(x0>x1){
+//             plotLineLow(frame, x1,y1,x0,y0);
+//         } else {
+//             plotLineLow(frame, x0,y0,x1,y1);
+//         }
+//     } else {
+//         if(y0>y1){
+//             plotLineHigh(frame, x1,y1,x0,y0);
+//         } else {
+//             plotLineHigh(frame, x0,y0,x1,y1);
+//         }
+//     }
+// }
 
 
-void drawLine(uint32_t* frame, Point p1, Point p2){
-    int dx = p2.x - p1.x;
-    int dy = p2.y - p1.y;
 
-    for(int i=p1.x; i<p2.x; i++){
-        int y = p1.y + dy * (i-p1.x) / dx;
-        frame[i + y*WIN_W] = 0xFFFFFF;
-    }
-}
 
-void castRay(uint32_t* frame, Player player){
 
-    float x = player.r.x + 100*cos(player.angle);
-    float y = player.r.y + 100*sin(player.angle);
+void castRay(Renderer r, Player player){
+
+    float x = player.r.x + 150*cos(player.angle);
+    float y = player.r.y - 150*sin(player.angle);
     
-    plotLine(frame, player.r.x, player.r.y, int(x), int(y));
+    r.plotLine(player.r.x, player.r.y, int(x), int(y));
+
+    r.plotLine(int(x), 0, int(x), int(y));
+    r.plotLine(0, int(y), int(x), int(y));
+
     
     
 
@@ -280,24 +226,26 @@ void castRay(uint32_t* frame, Player player){
 int main()
 {
     // SDL Setup
-    SDL_Window* window = NULL;
-    SDL_Surface* screenSurface = NULL;
-    SDL_Surface* offscreen = NULL;
+    // SDL_Window* window = NULL;
+    // SDL_Surface* screenSurface = NULL;
+    // SDL_Surface* offscreen = NULL;
     
-    if(SDL_Init(SDL_INIT_VIDEO) < 0)
-	{
-		printf("SDL could not initialize ! SDL_Error: %s", SDL_GetError());
-        return -1;
-	}
 
-    // Create window
-    window = SDL_CreateWindow("rc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIN_W, WIN_H, SDL_WINDOW_SHOWN);
-    //SDL_SetWindowResizable(window, SDL_TRUE);
 
-    if(window == NULL) {
-        printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-        return -1;
-    }
+    // if(SDL_Init(SDL_INIT_VIDEO) < 0)
+	// {
+	// 	printf("SDL could not initialize ! SDL_Error: %s", SDL_GetError());
+    //     return -1;
+	// }
+
+    // // Create window
+    // window = SDL_CreateWindow("rc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIN_W, WIN_H, SDL_WINDOW_SHOWN);
+    // //SDL_SetWindowResizable(window, SDL_TRUE);
+
+    // if(window == NULL) {
+    //     printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+    //     return -1;
+    // }
 
 
     SDL_Event e;
@@ -308,6 +256,8 @@ int main()
     Player player = {0., {400,300,1,1,0x00FFFFFF}};
     //drawLine(frame, {0,0}, {800,600});
     
+    Renderer rend(WIN_W, WIN_H);
+
     do {
         SDL_PollEvent(&e);
  
@@ -350,41 +300,45 @@ int main()
         }
         
         uint32_t frame[WIN_W*WIN_H];
+        rend.frame = frame;
         t2 = SDL_GetTicks64();
 
         // TODO FIX TIME
 
         if(t1-t2 >= 0){
-            // Get window surface
-            screenSurface = SDL_GetWindowSurface(window);  
+            // // Get window surface
+            // screenSurface = SDL_GetWindowSurface(window);
 
-            //tile((uint32_t*)frame);
-            setFrameColor((uint32_t*)frame, 0);
-            // applyTileMapToFrame((uint32_t*)frame);
-            drawRectToFrame((uint32_t*)frame, player.r);
-            //castRay((uint32_t*)frame, player);
+            // //tile((uint32_t*)frame);
+            // setFrameColor((uint32_t*)frame, 0);
+            // // applyTileMapToFrame((uint32_t*)frame);
+            // drawRectToFrame((uint32_t*)frame, player.r);
+            // //castRay((uint32_t*)frame, player);
 
 
-            castRay(frame, player);
-            player.angle += M_1_PIf32/6;
+            castRay(rend, player);
+            
+            player.angle += M_1_PIf32/24;
+
             //plotLine(frame, player.r.x, player.r.y, cos(player.angle), sin(player.angle));
 
             
-            offscreen = SDL_CreateRGBSurfaceFrom(frame, WIN_W, WIN_H, 32, 4*WIN_W, 0x00FF0000, 0x0000FF00, 0x000000FF, 0);
-            if(offscreen == NULL){
-                printf("Surface could not be created! SDL_Error: %s\n", SDL_GetError());
-                return -1;
-            }
+            // offscreen = SDL_CreateRGBSurfaceFrom(frame, WIN_W, WIN_H, 32, 4*WIN_W, 0x00FF0000, 0x0000FF00, 0x000000FF, 0);
+            // if(offscreen == NULL){
+            //     printf("Surface could not be created! SDL_Error: %s\n", SDL_GetError());
+            //     return -1;
+            // }
 
-            SDL_BlitSurface(offscreen, NULL, screenSurface, NULL);
-            SDL_FreeSurface(offscreen);
+            // SDL_BlitSurface(offscreen, NULL, screenSurface, NULL);
+            // SDL_FreeSurface(offscreen);
 
-            std::cout << SDL_GetError();
+            // std::cout << SDL_GetError();
 
             
 
-            // Update the surface
-            SDL_UpdateWindowSurface(window);
+            // // Update the surface
+            // SDL_UpdateWindowSurface(window);
+            rend.updateWindow();
         } else {
             t1 = t2;
         }
@@ -395,12 +349,12 @@ int main()
     } while(e.type != SDL_QUIT);
 
 
+    rend.quit();
+    // // Destroy window
+    // SDL_DestroyWindow(window);
 
-    // Destroy window
-    SDL_DestroyWindow(window);
-
-    // Quit SDL subsystems
-    SDL_Quit();
+    // // Quit SDL subsystems
+    // SDL_Quit();
 
 
     // std::ofstream File("frame.ppm", std::ios::out | std::ios::binary);
