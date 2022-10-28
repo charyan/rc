@@ -15,8 +15,12 @@
 #include "headers/Renderer.h"
 #include "headers/RayCaster.h"
 
+#define PI 3.14
+
 unsigned int WIN_W = 800;
 unsigned int WIN_H = 600;
+
+float PLAYER_SPEED = 5.;
 
 const unsigned int TILE_SIZE = 100;
 
@@ -113,23 +117,33 @@ int main()
         case SDL_KEYDOWN:
             switch (e.key.keysym.sym)
             {
-            case SDLK_UP:
-                player.r.y -= 10;
-                
+            case SDLK_w:
+                player.r.x += PLAYER_SPEED*cos(player.angle);
+                player.r.y -= PLAYER_SPEED*sin(player.angle);
                 break;
-            case SDLK_DOWN:
-                player.r.y += 10;
-                
+
+            case SDLK_a:
+                player.r.x += PLAYER_SPEED*cos(player.angle+PI/2);
+                player.r.y -= PLAYER_SPEED*sin(player.angle+PI/2);
+                break;
+
+            case SDLK_s:
+                player.r.x -= PLAYER_SPEED*cos(player.angle);
+                player.r.y += PLAYER_SPEED*sin(player.angle);
+                break;
+
+            case SDLK_d:
+                player.r.x -= PLAYER_SPEED*cos(player.angle+PI/2);
+                player.r.y += PLAYER_SPEED*sin(player.angle+PI/2);
                 break;
             case SDLK_LEFT:
-                player.r.x -= 10;
-                
+                player.angle += PI/6;
                 break;
             case SDLK_RIGHT:
-                player.r.x += 10;
+                player.angle -= PI/6;
                 break;
             case SDLK_SPACE:
-                player.angle += M_1_PIf32/6;
+                SDL_SetWindowSize(rend.window, rend.winW+=20, rend.winH+=20);
                 break;     
             
             default:
@@ -140,7 +154,7 @@ int main()
             break;
         }
 
-        uint32_t frame[WIN_W*WIN_H];
+        uint32_t frame[rend.winW*rend.winH];
         rend.frame = frame;
         rend.setFrameColor(0);
 
@@ -156,8 +170,8 @@ int main()
 
         t2 = SDL_GetTicks64();
     
-        printf("deltaT[s]: %f | ", (t2-t1)/1000.);
-        printf("fps: %4.1f\n", 1/((t2-t1)/1000.));
+        //printf("deltaT[s]: %f | fps: %4.1f\r", (t2-t1)/1000., 1/((t2-t1)/1000.));
+        printf("x: %d, y: %d, angle: %f, cos: %f, sin: %f\r", player.r.x, player.r.y, player.angle, cos(player.angle), sin(player.angle));
 
         // rend.saveFrameToFile();
         // break;

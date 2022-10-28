@@ -79,12 +79,14 @@ void Renderer::plotLine(int x0, int y0, int x1, int y1){
 
 void Renderer::setFrameColor(uint32_t _rgb){
     for(int i=0; i<winW*winH; i++){
-        frame[i] = _rgb;
+                frame[i] = _rgb;
     }
 }
 
 void Renderer::drawRectToFrame(Rect rec){
     //printf("{x: %d, y:%d, width:%d, height:%d, color:%x}\n", rec.x, rec.y, rec.width, rec.height, rec.color);
+    if(rec.x < 0 || rec.x > winW-rec.width || rec.y < 0 || rec.y > winH-rec.height) return;
+    
     for(int y=rec.y; y<rec.y+rec.height; y++){
         for(int x=rec.x; x<rec.x+rec.width; x++){
             frame[x + y*winW] = rec.color;
