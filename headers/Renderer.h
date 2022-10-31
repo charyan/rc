@@ -10,6 +10,8 @@
 class Renderer{
     public:
         uint32_t* frame;
+        uint32_t* rcView;
+        uint32_t* windowFrame;
         uint32_t winW;
         uint32_t winH;
 
@@ -23,6 +25,7 @@ class Renderer{
         void saveFrameToFile();
         void updateWindow();
         void quit();
+        void stitchViews();
 
         Renderer(uint32_t _winW, uint32_t _winH);
 

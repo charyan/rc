@@ -110,7 +110,7 @@ Renderer::Renderer(uint32_t _winW, uint32_t _winH){
 	}
 
     // Create window
-    window = SDL_CreateWindow("rc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, winW, winH, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("rc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, winW*2, winH, SDL_WINDOW_SHOWN);
     //SDL_SetWindowResizable(window, SDL_TRUE);
 
     if(window == NULL) {
@@ -123,8 +123,9 @@ Renderer::Renderer(uint32_t _winW, uint32_t _winH){
 }
 
 void Renderer::updateWindow(){
+    stitchViews();
     screenSurface = SDL_GetWindowSurface(window);
-    offscreen = SDL_CreateRGBSurfaceFrom(frame, winW, winH, 32, 4*winW, 0x00FF0000, 0x0000FF00, 0x000000FF, 0);
+    offscreen = SDL_CreateRGBSurfaceFrom(windowFrame, winW*2, winH, 32, 4*winW*2, 0x00FF0000, 0x0000FF00, 0x000000FF, 0);
     if(offscreen == NULL){
         printf("Surface could not be created! SDL_Error: %s\n", SDL_GetError());
         exit(1);
@@ -165,5 +166,21 @@ void Renderer::saveFrameToFile(){
     }
     
     File.close();
+}
+
+void Renderer::stitchViews(){
+
+    for(int y=0; y<winH; y++){
+        for(int x=0; x<winW*2; x++){
+            if(x<winW){
+                windowFrame[x+y*winW*2] = frame[x+y*winW];
+            } else {
+                windowFrame[x+y*winW*2] = rcView[(x-winW)+y*winW];
+            }
+        }
+    }
+
+
+    // windowFrame[i] = (isFirstView) ? frame[i] : rcView[i-winW];
 }
 

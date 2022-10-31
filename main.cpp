@@ -97,7 +97,6 @@ void tile(uint32_t* frame){
 int main()
 {
     SDL_Event e;
-    SDL_Event ecpy;
 
    
 
@@ -159,7 +158,11 @@ int main()
 
 
         uint32_t frame[rend.winW*rend.winH];
+        uint32_t rcView[rend.winW*rend.winH];
+        uint32_t windowFrame[rend.winW*rend.winH*2];
         rend.frame = frame;
+        rend.rcView = rcView;
+        rend.windowFrame = windowFrame;
         rend.setFrameColor(0);
 
 
