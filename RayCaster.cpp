@@ -1,31 +1,68 @@
 #include "headers/RayCaster.h"
 
+uint32_t RayCaster::packRGB(uint8_t _r, uint8_t _g, uint8_t _b){
+    uint32_t _rgb = 0;
 
-void RayCaster::castRay(Player player){
+    _rgb   = _r;
+    _rgb <<=  8;
+    _rgb  |= _g;
+    _rgb <<=  8;
+    _rgb  |= _b;
+    return _rgb;
+}
 
-    int r = 0;
+void RayCaster::drawRayCastView(Player player){
+    uint32_t* view = rend->rcView;
+    float angleStep = (3.14/2)/(rend->winW)*10;
+
+    float modifier = 0xFF/sqrt(pow(rend->winH,2)+pow(rend->winW,2));
+
+    int slice = 0;
+    for(float i=player.angle+(3.14/4); i>player.angle-(3.14/4); i-=angleStep){
+        float d = castRay(player, i);
+        if(d != -1){
+            float height = (rend->winH)/d;
+            height *= 20;
+
+            int c = 0xFF-d*modifier;
+            int color = packRGB(c,c,c);
+            rend->drawRectToFrame(Rect(slice*10,rend->winH/2-height/2,10,height,color), view);
+        }
+        slice++;
+    }
+
+    // castRay(player, player.angle-(3.14/4));
+    // castRay(player, player.angle+(3.14/4));
+}
+
+float RayCaster::castRay(Player player){
+    return castRay(player, player.angle);
+}
+float RayCaster::castRay(Player player, float angle){
+
+    float r = 0;
     float x = 0.;
     float y = 0.;
 
+    bool quit = false;
     // increase r until we find a wall
     for(; r<1000; r += 1){
-        x = player.x + r*cos(player.angle);
-        y = player.y - r*sin(player.angle);
+        x = player.x + r*cos(angle);
+        y = player.y - r*sin(angle);
         
-        bool quit = false;
 
-        if(int(x) < 0){
+        if(x < 0){
             x = 0;
             quit = true;
-        } else if (int(x) > rend->winW){
+        } else if (x > rend->winW){
             x = rend->winW;
             quit = true;
         }
 
-        if(int(y) < 0) {
+        if(y < 0) {
             y = 0;
             quit = true;
-        } else if (int(y) > rend->winH){
+        } else if (y > rend->winH){
             y = rend->winH;
             quit = true;
         }
@@ -40,11 +77,11 @@ void RayCaster::castRay(Player player){
     rend->plotLine(player.getX(), player.getY(), int(x), int(y));
     
 
-    rend->drawRectToFrame(Rect(int(x), int(y), 10,10,0xFF0000));
+    // rend->drawRectToFrame(Rect(int(x), int(y), 10,10,0xFF0000));
 
     // rend->plotLine(int(x), 0, int(x), int(y));
     // rend->plotLine(0, int(y), int(x), int(y));
-
+    return (quit) ? -1 : sqrt(pow(r*cos(angle),2) + pow(r*sin(angle),2));
 }
 
 RayCaster::RayCaster(Renderer &_rend){
@@ -59,7 +96,4 @@ void RayCaster::applyGamemap(uint32_t* map, uint32_t _mapW, uint32_t _mapH){
             }
         }
     }
-
-
-
 }

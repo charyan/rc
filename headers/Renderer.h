@@ -21,7 +21,9 @@ class Renderer{
 
         void plotLine(int x0, int y0, int x1, int y1);
         void setFrameColor(uint32_t _rgb);
+        void setFrameColor(uint32_t _rgb, uint32_t* view);
         void drawRectToFrame(Rect rec);
+        void drawRectToFrame(Rect rec, uint32_t* view);
         void saveFrameToFile();
         void updateWindow();
         void quit();

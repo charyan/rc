@@ -78,20 +78,28 @@ void Renderer::plotLine(int x0, int y0, int x1, int y1){
 
 
 void Renderer::setFrameColor(uint32_t _rgb){
+    setFrameColor(_rgb, frame);
+}
+
+void Renderer::setFrameColor(uint32_t _rgb, uint32_t* view){
     for(int i=0; i<winW*winH; i++){
-                frame[i] = _rgb;
+                view[i] = _rgb;
     }
 }
 
-void Renderer::drawRectToFrame(Rect rec){
+
+void Renderer::drawRectToFrame(Rect rec, uint32_t* view){
     //printf("{x: %d, y:%d, width:%d, height:%d, color:%x}\n", rec.x, rec.y, rec.width, rec.height, rec.color);
     if(rec.x < 0 || rec.x > winW-rec.width || rec.y < 0 || rec.y > winH-rec.height) return;
     
     for(int y=rec.y; y<rec.y+rec.height; y++){
         for(int x=rec.x; x<rec.x+rec.width; x++){
-            frame[x + y*winW] = rec.color;
+            view[x + y*winW] = rec.color;
         }
     }
+}
+void Renderer::drawRectToFrame(Rect rec){
+    drawRectToFrame(rec, frame);
 }
 
 Renderer::Renderer(uint32_t _winW, uint32_t _winH){
