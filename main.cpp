@@ -97,6 +97,7 @@ void tile(uint32_t* frame){
 int main()
 {
     SDL_Event e;
+    SDL_Event ecpy;
 
    
 
@@ -118,23 +119,23 @@ int main()
             switch (e.key.keysym.sym)
             {
             case SDLK_w:
-                player.r.x += PLAYER_SPEED*cos(player.angle);
-                player.r.y -= PLAYER_SPEED*sin(player.angle);
+                player.x += PLAYER_SPEED*cos(player.angle);
+                player.y -= PLAYER_SPEED*sin(player.angle);
                 break;
 
             case SDLK_a:
-                player.r.x += PLAYER_SPEED*cos(player.angle+PI/2);
-                player.r.y -= PLAYER_SPEED*sin(player.angle+PI/2);
+                player.x += PLAYER_SPEED*cos(player.angle+PI/2);
+                player.y -= PLAYER_SPEED*sin(player.angle+PI/2);
                 break;
 
             case SDLK_s:
-                player.r.x -= PLAYER_SPEED*cos(player.angle);
-                player.r.y += PLAYER_SPEED*sin(player.angle);
+                player.x -= PLAYER_SPEED*cos(player.angle);
+                player.y += PLAYER_SPEED*sin(player.angle);
                 break;
 
             case SDLK_d:
-                player.r.x -= PLAYER_SPEED*cos(player.angle+PI/2);
-                player.r.y += PLAYER_SPEED*sin(player.angle+PI/2);
+                player.x -= PLAYER_SPEED*cos(player.angle+PI/2);
+                player.y += PLAYER_SPEED*sin(player.angle+PI/2);
                 break;
             case SDLK_LEFT:
                 player.angle += PI/6;
@@ -154,6 +155,9 @@ int main()
             break;
         }
 
+
+
+
         uint32_t frame[rend.winW*rend.winH];
         rend.frame = frame;
         rend.setFrameColor(0);
@@ -162,7 +166,8 @@ int main()
         // castRay(rend, player);
         rc.applyGamemap(GAMEMAP, 6,6);
         rc.castRay(player);
-        rend.drawRectToFrame(player.r);
+        rend.drawRectToFrame(Rect(player.getX(), player.getY(), player.r.width, player.r.height, player.r.color));
+
 
         // player.angle += M_1_PIf32/24;
 

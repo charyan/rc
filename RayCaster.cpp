@@ -9,8 +9,8 @@ void RayCaster::castRay(Player player){
 
     // increase r until we find a wall
     for(; r<1000; r += 1){
-        x = player.r.x + r*cos(player.angle);
-        y = player.r.y - r*sin(player.angle);
+        x = player.x + r*cos(player.angle);
+        y = player.y - r*sin(player.angle);
         
         bool quit = false;
 
@@ -37,7 +37,7 @@ void RayCaster::castRay(Player player){
 
     
     // draw the line between player and the hit point
-    rend->plotLine(player.r.x, player.r.y, int(x), int(y));
+    rend->plotLine(player.getX(), player.getY(), int(x), int(y));
     
 
     rend->drawRectToFrame(Rect(int(x), int(y), 10,10,0xFF0000));
