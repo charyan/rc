@@ -20,7 +20,7 @@
 unsigned int WIN_W = 800;
 unsigned int WIN_H = 600;
 
-float PLAYER_SPEED = 5.;
+float PLAYER_SPEED = 1.;
 
 const unsigned int TILE_SIZE = 100;
 
@@ -123,56 +123,113 @@ int main()
     RayCaster rc(rend);
     
 
+    bool key_w = false;
+    bool key_a = false;
+    bool key_s = false;
+    bool key_d = false;
+    bool key_left = false;
+    bool key_right = false;
     do {
         uint64_t t1 = SDL_GetTicks64();
         uint64_t t2 = 0;
 
-        SDL_PollEvent(&e);
- 
-        switch (e.type)
-        {
-        case SDL_KEYDOWN:
-            switch (e.key.keysym.sym)
+        float nx = 0.;
+        float ny = 0.;
+        float na = 0.;
+        while(SDL_PollEvent(&e) != 0 && (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)){
+            switch (e.type)
             {
-            case SDLK_w:
-                player.x += PLAYER_SPEED*cos(player.angle);
-                player.y -= PLAYER_SPEED*sin(player.angle);
+            case SDL_KEYDOWN:
+                switch (e.key.keysym.sym)
+                {
+                case SDLK_w:
+                    key_w = true;
+                    break;
+                case SDLK_a:
+                    key_a = true;
+                    break;
+                case SDLK_s:
+                    key_s = true;
+                    break;
+                case SDLK_d:
+                    key_d = true;
+                    break;
+                case SDLK_LEFT:
+                    key_left = true;
+                    break;
+                case SDLK_RIGHT:
+                    key_right = true;
+                    break;
+                case SDLK_LSHIFT:
+                    PLAYER_SPEED = 2.;
+                    break;     
+                default:
+                    break;
+                }
                 break;
-
-            case SDLK_a:
-                player.x += PLAYER_SPEED*cos(player.angle+PI/2);
-                player.y -= PLAYER_SPEED*sin(player.angle+PI/2);
-                break;
-
-            case SDLK_s:
-                player.x -= PLAYER_SPEED*cos(player.angle);
-                player.y += PLAYER_SPEED*sin(player.angle);
-                break;
-
-            case SDLK_d:
-                player.x -= PLAYER_SPEED*cos(player.angle+PI/2);
-                player.y += PLAYER_SPEED*sin(player.angle+PI/2);
-                break;
-            case SDLK_LEFT:
-                player.angle += PI/6;
-                break;
-            case SDLK_RIGHT:
-                player.angle -= PI/6;
-                break;
-            case SDLK_SPACE:
-                SDL_SetWindowSize(rend.window, rend.winW+=20, rend.winH+=20);
-                break;     
-            
+            case SDL_KEYUP:
+                switch (e.key.keysym.sym)
+                {
+                case SDLK_w:
+                    key_w = false;
+                    break;
+                case SDLK_a:
+                    key_a = false;
+                    break;
+                case SDLK_s:
+                    key_s = false;
+                    break;
+                case SDLK_d:
+                    key_d = false;
+                    break;
+                case SDLK_LEFT:
+                    key_left = false;
+                    break;
+                case SDLK_RIGHT:
+                    key_right = false;
+                    break;
+                case SDLK_LSHIFT:
+                    PLAYER_SPEED = 1.;
+                    break;     
+                default:
+                    break;
+                }
             default:
                 break;
             }
-            break;
-        default:
-            break;
         }
 
+        if(key_w){
+            nx = PLAYER_SPEED*cos(player.angle);
+            ny = -PLAYER_SPEED*sin(player.angle);
+        }
 
+        if(key_a){
+            nx = PLAYER_SPEED*cos(player.angle+PI/2);
+            ny = -PLAYER_SPEED*sin(player.angle+PI/2);
+        }
 
+        if(key_s){
+            nx = -PLAYER_SPEED*cos(player.angle);
+            ny = PLAYER_SPEED*sin(player.angle);
+        }
+
+        if(key_d){
+            nx = -PLAYER_SPEED*cos(player.angle+PI/2);
+            ny = PLAYER_SPEED*sin(player.angle+PI/2);
+        }
+
+        if(key_left){
+            na += PI/120;
+        }
+
+        if(key_right){
+            na -= PI/120;
+        }
+
+        player.x     += nx;
+        player.y     += ny;
+        player.angle += na;
 
         uint32_t frame[rend.winW*rend.winH];
         uint32_t rcView[rend.winW*rend.winH];
@@ -197,7 +254,7 @@ int main()
 
         t2 = SDL_GetTicks64();
     
-        printf("deltaT[s]: %f | fps: %4.1f\r", (t2-t1)/1000., 1/((t2-t1)/1000.));
+        // printf("deltaT[s]: %f | fps: %4.1f\r", (t2-t1)/1000., 1/((t2-t1)/1000.));
         // printf("x: %d, y: %d, angle: %f, cos: %f, sin: %f\r", player.r.x, player.r.y, player.angle, cos(player.angle), sin(player.angle));
 
         // rend.saveFrameToFile();

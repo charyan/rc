@@ -1,8 +1,4 @@
 *.bmp
 *.ppm
 *.vscode/*
-main
-Rect
-Renderer
-RayCaster
-Player
+rc

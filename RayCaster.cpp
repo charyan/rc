@@ -12,8 +12,10 @@ uint32_t RayCaster::packRGB(uint8_t _r, uint8_t _g, uint8_t _b){
 }
 
 void RayCaster::drawRayCastView(Player player){
+    int sliceWidth = 10; // in px
+
     uint32_t* view = rend->rcView;
-    float angleStep = (3.14/2)/(rend->winW)*10;
+    float angleStep = (3.14/2)/(rend->winW)*sliceWidth;
 
     float modifier = 0xFF/sqrt(pow(rend->winH,2)+pow(rend->winW,2));
 
@@ -27,7 +29,7 @@ void RayCaster::drawRayCastView(Player player){
             int c = 0xFF-d*modifier;
             int color = packRGB(c,c,c);
             height = (height > rend->winH) ? rend->winH : height;
-            rend->drawRectToFrame(Rect(slice*10,rend->winH/2-height/2,10,height,color), view);
+            rend->drawRectToFrame(Rect(slice*sliceWidth,rend->winH/2-height/2,sliceWidth,height,color), view);
         }
         slice++;
     }
@@ -47,7 +49,8 @@ float RayCaster::castRay(Player player, float angle){
 
     bool quit = false;
     // increase r until we find a wall
-    for(;; r += 0.1){
+    while(true){
+        r += 1;
         x = player.x + r*cos(angle);
         y = player.y - r*sin(angle);
         
