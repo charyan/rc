@@ -22,7 +22,7 @@ void RayCaster::drawRayCastView(Player player){
         float d = castRay(player, i);
         if(d != -1){
             float height = (rend->winH)/d;
-            height *= 20;
+            height *= 40;
 
             int c = 0xFF-d*modifier;
             int color = packRGB(c,c,c);

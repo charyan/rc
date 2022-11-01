@@ -197,8 +197,8 @@ int main()
 
         t2 = SDL_GetTicks64();
     
-        //printf("deltaT[s]: %f | fps: %4.1f\r", (t2-t1)/1000., 1/((t2-t1)/1000.));
-        printf("x: %d, y: %d, angle: %f, cos: %f, sin: %f\r", player.r.x, player.r.y, player.angle, cos(player.angle), sin(player.angle));
+        printf("deltaT[s]: %f | fps: %4.1f\r", (t2-t1)/1000., 1/((t2-t1)/1000.));
+        // printf("x: %d, y: %d, angle: %f, cos: %f, sin: %f\r", player.r.x, player.r.y, player.angle, cos(player.angle), sin(player.angle));
 
         // rend.saveFrameToFile();
         // break;
