@@ -22,10 +22,11 @@ void RayCaster::drawRayCastView(Player player){
         float d = castRay(player, i);
         if(d != -1){
             float height = (rend->winH)/d;
-            height *= 40;
+            height *= 60;
 
             int c = 0xFF-d*modifier;
             int color = packRGB(c,c,c);
+            height = (height > rend->winH) ? rend->winH : height;
             rend->drawRectToFrame(Rect(slice*10,rend->winH/2-height/2,10,height,color), view);
         }
         slice++;
@@ -46,7 +47,7 @@ float RayCaster::castRay(Player player, float angle){
 
     bool quit = false;
     // increase r until we find a wall
-    for(; r<1000; r += 1){
+    for(;; r += 0.1){
         x = player.x + r*cos(angle);
         y = player.y - r*sin(angle);
         
