@@ -9,3 +9,7 @@ cd rc/
 make all
 ./rc
 ```
+
+## Player movement
+Use `W` `A` `S` `D` to move.
+Use `Left arrow` `Right arrow` to rotate.
