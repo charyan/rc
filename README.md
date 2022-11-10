@@ -9,6 +9,8 @@ cd rc/
 make all
 ./rc
 ```
+If you encouter the following error : `libSDL2-2.0.so.0: cannot open shared object file`
+You need to add the path to the SDL2 lib with `export LD_LIBRARY_PATH="/usr/local/lib"`
 
 ## Player movement
 Use `W` `A` `S` `D` to move.
